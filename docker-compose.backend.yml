@@ -1,3 +1,5 @@
+name: homelab-ai-backend
+
 services:
   ollama:
     image: ollama/ollama:latest

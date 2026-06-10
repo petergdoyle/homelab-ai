@@ -1,3 +1,5 @@
+name: homelab-ai-frontend
+
 services:
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -7,7 +9,7 @@ services:
     volumes:
       - webui_data:/app/backend/data
     environment:
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://192.168.20.11:11434}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     restart: unless-stopped
 
 volumes:
