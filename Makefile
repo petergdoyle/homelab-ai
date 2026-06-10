@@ -3,7 +3,7 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-.PHONY: help up down pull-model start logs clean
+.PHONY: help up down logs clean backend-up backend-down backend-logs backend-clean frontend-up frontend-down frontend-logs frontend-clean pull-model start-backend
 
 .DEFAULT_GOAL := help
 
@@ -11,28 +11,63 @@ endif
 MODEL_NAME = $(if $(NAME),$(NAME),$(DEFAULT_MODEL))
 
 help:
-	@echo "Homelab AI Backend Control"
+	@echo "Homelab AI Control Interface"
+	@echo "----------------------------"
+	@echo "Manage your local AI stack (Ollama Backend & Open WebUI Frontend)."
 	@echo ""
 	@echo "Usage:"
 	@echo "  make <target>"
 	@echo ""
-	@echo "Targets:"
-	@echo "  start       Launch the Ollama backend container and pull the default model"
-	@echo "  up          Launch the Ollama backend container in detached mode"
-	@echo "  pull-model  Pull a model (Usage: make pull-model [NAME=model_name] - default: $(DEFAULT_MODEL))"
-	@echo "  down        Stop and remove the Ollama backend container"
-	@echo "  logs        Tail Ollama service logs"
-	@echo "  clean       Stop container and delete persistent volumes"
-	@echo "  help        Display this help message"
+	@echo "Combined Stack Targets:"
+	@echo "  up             Launch both Frontend and Backend stacks"
+	@echo "  down           Stop both Frontend and Backend stacks"
+	@echo "  logs           Tail logs for both stacks"
+	@echo "  clean          Stop both stacks and delete all persistent volumes"
+	@echo ""
+	@echo "Backend Stack (Ollama) Targets:"
+	@echo "  backend-up     Launch Ollama backend container"
+	@echo "  backend-down   Stop Ollama backend container"
+	@echo "  backend-logs   Tail Ollama service logs"
+	@echo "  backend-clean  Stop Ollama backend container and delete its database volume"
+	@echo "  start-backend  Launch Ollama backend and pull the default model ($(DEFAULT_MODEL))"
+	@echo "  pull-model     Pull a model (Usage: make pull-model [NAME=model_name])"
+	@echo ""
+	@echo "Frontend Stack (Open WebUI) Targets:"
+	@echo "  frontend-up    Launch Open WebUI frontend container"
+	@echo "  frontend-down  Stop Open WebUI frontend container"
+	@echo "  frontend-logs  Tail Open WebUI service logs"
+	@echo "  frontend-clean Stop Open WebUI frontend container and delete its database volume"
 
-up:
+# --- Combined Stack ---
+
+up: backend-up frontend-up
+
+down: frontend-down backend-down
+
+logs:
+	docker compose -f docker-compose.backend.yml -f docker-compose.yml logs -f
+
+clean: frontend-clean backend-clean
+
+# --- Backend Stack ---
+
+backend-up:
 	docker compose -f docker-compose.backend.yml up -d
+
+backend-down:
+	docker compose -f docker-compose.backend.yml down
+
+backend-logs:
+	docker compose -f docker-compose.backend.yml logs -f
+
+backend-clean:
+	docker compose -f docker-compose.backend.yml down -v
 
 pull-model:
 	@echo "Pulling model: $(MODEL_NAME)..."
 	docker exec -it ollama ollama pull $(MODEL_NAME)
 
-start: up
+start-backend: backend-up
 	@echo "Waiting for Ollama to become ready..."
 	@until docker exec ollama ollama list >/dev/null 2>&1; do \
 		sleep 1; \
@@ -40,13 +75,18 @@ start: up
 	@$(MAKE) pull-model
 	@echo ""
 	@echo "Ollama API is ready!"
-	@echo "Ollama API: http://localhost:$${OLLAMA_PORT:-11434}"
+	@echo "Ollama API URL: http://localhost:$${OLLAMA_PORT:-11434}"
 
-down:
-	docker compose -f docker-compose.backend.yml down
+# --- Frontend Stack ---
 
-logs:
-	docker compose -f docker-compose.backend.yml logs -f
+frontend-up:
+	docker compose -f docker-compose.yml up -d
 
-clean:
-	docker compose -f docker-compose.backend.yml down -v
+frontend-down:
+	docker compose -f docker-compose.yml down
+
+frontend-logs:
+	docker compose -f docker-compose.yml logs -f
+
+frontend-clean:
+	docker compose -f docker-compose.yml down -v
