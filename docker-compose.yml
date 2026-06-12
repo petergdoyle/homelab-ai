@@ -10,6 +10,8 @@ services:
       - webui_data:/app/backend/data
     environment:
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - ENABLE_OTEL=${ENABLE_OTEL:-false}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
     restart: unless-stopped
 
 volumes:

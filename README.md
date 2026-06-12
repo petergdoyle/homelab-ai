@@ -60,6 +60,25 @@ Configuration is managed via the [.env](./.env) file:
 - **`DEFAULT_MODEL`**: The LLM model to pull on start (Default: `qwen2.5-coder:7b`).
 - **`OLLAMA_BASE_URL`**: The API target endpoint that Open WebUI contacts (Default: `http://host.docker.internal:11434`).
 
+- **`OPENLIT_PORT`**: Exposes the OpenLIT dashboard port (Default: `3005`).
+- **`ENABLE_OTEL`**: Enables OpenTelemetry traces in Open WebUI (Default: `false`).
+- **`OTEL_EXPORTER_OTLP_ENDPOINT`**: OTLP collector address for traces (Default: `http://host.docker.internal:4318`).
+
+---
+
+## 📊 LLM Observability & Monitoring (OpenLIT)
+
+You can run **OpenLIT** as an observability backend to monitor response speeds, token usage, cost analytics, and hardware performance (GPU/memory) of both your Docker containers and bare-metal native macOS scripts.
+
+* **Start the Monitor Stack**:
+  ```bash
+  make monitor-up
+  ```
+* **Dashboard Access**: Visit [http://localhost:3005](http://localhost:3005) (Default Login: `user@openlit.io` / `openlituser`).
+* **Enable UI Monitoring**: Set `ENABLE_OTEL=true` in your `.env` file and run `make up`.
+
+For detailed setup, auto-instrumentation code snippets for Python/NodeJS, and architecture flows, see the [LLM & GenAI Monitoring Guide](./docs/monitoring.md).
+
 ---
 
 ## 🛠️ Management Commands
@@ -89,6 +108,7 @@ All operations are automated using the root [Makefile](./Makefile):
 - **`make mac-start`**: Opens native `Ollama.app` (or starts CLI daemon) and pulls default model.
 - **`make mac-stop`**: Gracefully quits native Ollama app and stops background CLI processes.
 - **`make mac-pull`**: Manually pull a model natively (Usage: `make mac-pull NAME=model_name`).
+- **`make mac-glances`**: Automatically install (if missing) and launch the Glances system resource monitor natively.
 
 ---
 
